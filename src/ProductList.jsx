@@ -6,6 +6,7 @@ import { addItem } from './CartSlice';
 
 function ProductList({ onHomeClick }) {
   const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.items);
   const [showCart, setShowCart] = useState(false);
   const [showPlants, setShowPlants] = useState(false);
   const [addedToCart, setAddedToCart] = useState({});
@@ -280,12 +281,12 @@ function ProductList({ onHomeClick }) {
 
   const handleCartClick = (e) => {
     e.preventDefault();
-    setShowCart(true); // Set showCart to true when cart icon is clicked
+    setShowCart(true);
   };
   const handlePlantsClick = (e) => {
     e.preventDefault();
-    setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
-    setShowCart(false); // Hide the cart when navigating to About Us
+    setShowPlants(true);
+    setShowCart(false);
   };
 
   const handleContinueShopping = (e) => {
@@ -297,6 +298,10 @@ function ProductList({ onHomeClick }) {
     dispatch(addItem(product));
 
     setAddedToCart((prevState) => ({ ...prevState, [product.name]: true }));
+  };
+
+  const calculateTotalQuantity = () => {
+    return cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
   };
 
   return (
@@ -327,6 +332,7 @@ function ProductList({ onHomeClick }) {
             {' '}
             <a href='#' onClick={(e) => handleCartClick(e)} style={styleA}>
               <h1 className='cart'>
+                {calculateTotalQuantity()}
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
                   viewBox='0 0 256 256'
@@ -362,17 +368,24 @@ function ProductList({ onHomeClick }) {
               <div className='product-list'>
                 {category.plants.map((plant, plantIndex) => (
                   <div className='product-card' key={plantIndex}>
-                    <img src={plant.image} alt={plant.name} />
+                    <img
+                      className='product-image'
+                      src={plant.image}
+                      alt={plant.name}
+                    />
                     <div className='product-title'>{plant.name}</div>
                     <div className='product-description'>
                       {plant.description}
                     </div>
-                    <div className='product-cost'>${plant.cost}</div>
+                    <div className='product-cost'>{plant.cost}</div>
                     <button
-                      className='product-button'
+                      className={`product-button ${cart.some((item) => item.name === plant.name) ? 'added-to-cart' : ''}`}
                       onClick={() => handleAddToCart(plant)}
+                      disabled={cart.some((item) => item.name === plant.name)}
                     >
-                      Add to Cart
+                      {cart.some((item) => item.name === plant.name)
+                        ? 'Added to Cart'
+                        : 'Add to Cart'}
                     </button>
                   </div>
                 ))}
